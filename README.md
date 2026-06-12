@@ -2,6 +2,8 @@
 
 基于 Qt5 + OpenCV + RFID 的嵌入式 Linux 无人车库系统，运行在粤嵌 GEC6818 开发板上。
 
+> **提示：** 你可以把这个 README 发给你的 AI Agent（如 Claude Code），让它帮你执行编译和部署。
+
 ## 下载地址
 
 **完整分发包（包含所有依赖，解压即可编译）：**
@@ -9,6 +11,23 @@
 https://share.feijipan.com/s/ThcHFqjV
 
 文件名：`smartgate-distribution-full.tar.gz`（约 310MB）
+
+## Agent 部署提示词
+
+如果你使用 AI Agent 帮你部署，可以直接复制以下提示词：
+
+```
+请帮我完成以下任务：
+
+1. 解压 smartgate-distribution-full.tar.gz
+2. 进入 smartgate-distribution 目录
+3. 运行 ./build-all.sh 编译项目
+4. 等待编译完成（约 2-3 分钟）
+5. 将 output/smartgate-deploy.tar.gz 拷贝到开发板
+6. 在开发板上解压并运行程序
+
+如果遇到问题，请查看 README.md 的故障排查章节。
+```
 
 ## 功能列表
 
@@ -173,6 +192,14 @@ smartgate-distribution/
 - **格式**：CSV 文本文件
 - **内容**：车牌标识,操作类型(inbound/outbound),时间戳
 
+### 重置车库数据
+
+```bash
+rm /frog/gate.db
+```
+
+删除后程序会自动创建新文件，车位计数归零。
+
 ## RFID 配置
 
 ### 硬件连接
@@ -183,22 +210,31 @@ smartgate-distribution/
 
 ### 卡号映射
 
-在 `project-src/src/mainwindow.cpp` 构造函数中配置：
+RFID 卡号需要先获取，然后配置到代码中。
+
+**获取卡号步骤：**
+
+1. 在开发板上连接 HW-033 模块到 UART1
+2. 运行程序，刷卡查看输出
+3. 程序会打印：`读到卡号: XXXXXXXX (0xXXXXXXXX)`
+4. 记下卡号，修改代码中的映射表
+
+**修改映射表：**
+
+编辑 `project-src/src/mainwindow.cpp`，找到构造函数中的 `cardPlateMap_`：
 
 ```cpp
 // 初始化卡号-车牌映射（硬编码）
+cardPlateMap_["你的卡号"] = "你的车牌号";
+```
+
+例如：
+```cpp
 cardPlateMap_["83533443"] = "贵B91VIP";
-// 添加更多卡号映射：
-// cardPlateMap_["XXXXXXXX"] = "车牌号";
+cardPlateMap_["AABBCCDD"] = "京A12345";
 ```
 
-### 获取卡号
-
-在开发板上刷卡测试，查看程序输出：
-
-```
-读到卡号: 83533443 (0x83533443)
-```
+修改后需要重新编译：`./build-all.sh qt`
 
 ## 故障排查
 
