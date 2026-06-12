@@ -1,0 +1,12 @@
+# 大文件 - 通过网盘分发
+*.tar.gz
+deps/
+build-output/
+output/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
